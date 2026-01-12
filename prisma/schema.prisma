@@ -6,14 +6,52 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ActionType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+
+  @@map("action_type")
+}
+
 model users {
-  id        Int    @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  deletedAt DateTime? @map("deleted_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  email     String   @unique
-  cpf       String   @unique
-  phoneNumber String @map("phone_number")
-  name      String
-  password  String
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  email       String        @unique @db.VarChar(255)
+  password    String        @db.VarChar(255)
+  cpf         String       @unique @db.VarChar(14)
+  phoneNumber String       @map("phone_number") @db.VarChar(20)
+  deletedAt   DateTime?     @map("deleted_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  permissions permissions[]
+
+  @@index([email], map: "idx_users_email")
+  @@index([cpf], map: "idx_users_cpf")
+  @@index([deletedAt], map: "idx_users_deleted_at")
+}
+
+model dom_permissions {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique @db.VarChar(100)
+  permissions permissions[]
+
+  @@index([name], map: "idx_dom_permissions_name")
+}
+
+model permissions {
+  id              Int             @id @default(autoincrement())
+  userId          Int             @map("user_id")
+  domPermissionId Int             @map("dom_permission_id")
+  action          ActionType
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  user            users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domPermission   dom_permissions @relation(fields: [domPermissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, domPermissionId, action], map: "uq_user_domain_type")
+  @@index([userId], map: "idx_permissions_user_id")
+  @@index([domPermissionId], map: "idx_permissions_dom_id")
+  @@index([action], map: "idx_permissions_type")
 }
