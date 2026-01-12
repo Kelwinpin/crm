@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { Prisma } from '@prisma/client';
 import bcrypt from "bcrypt";
+import { handlePrismaError } from 'src/shared/utils/handle-prisma-error';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -22,7 +23,7 @@ export class UsersService {
   async createUser(user: CreateUserDto) {
     try {
       const saltRounds = 10;
-      user.password = bcrypt.hashSync(user.password, saltRounds);
+      user.password = await bcrypt.hash(user.password, saltRounds);
 
       const verifyBase = await this.prisma.users.findFirst({
         where: {
@@ -45,15 +46,7 @@ export class UsersService {
         data: user,
       });
     } catch (error) {
-      if (error instanceof ConflictException) {
-        throw error;
-      }
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException('Dados inválidos');
-      }
-
-      throw new InternalServerErrorException('Erro interno do servidor');
+      handlePrismaError(error);
     }
   }
 
