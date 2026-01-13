@@ -1,16 +1,18 @@
-import { verifyEmail } from "src/shared/utils/verifyEmail";
+import { verifyEmail } from "src/shared/utils/verify-email";
 import { PrismaService } from "../prisma/prisma.service";
-import { isCPFValid } from "src/shared/utils/isCPFValid";
+import { isCPFValid } from "src/shared/utils/is-cpf-valid";
 import { ConflictException, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "bcrypt";
 import { handlePrismaError } from "src/shared/utils/handle-prisma-error";
+import { PermissionsService } from "../permissions/permissions.service";
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private permissionsService: PermissionsService
     ) {}
     
     async login(login: string, password: string) {
@@ -48,6 +50,8 @@ export class AuthService {
 
             const comparePassword = await bcrypt.compare(password, user.password);
 
+            const permissions = await this.permissionsService.getPermissionsByUserId(user.id);            
+
             if (!comparePassword) {
                 throw new ConflictException('Senha incorreta');
             }
@@ -56,8 +60,11 @@ export class AuthService {
 
             const token = this.jwtService.sign(user);
 
+            const p = this.jwtService.sign({ permissions });
+
             return {
-                access_token: token
+                access_token: token,
+                p: p,
             };
         } catch (error) {
             handlePrismaError(error);

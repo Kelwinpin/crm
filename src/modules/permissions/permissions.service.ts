@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { LinkPermissionDto } from "./dto/linkPermission.dto";
 import { handlePrismaError } from "src/shared/utils/handle-prisma-error";
+import { PermissionsMapper } from "./permissions.mapper";
 
 @Injectable()
 export class PermissionsService {
@@ -30,11 +31,16 @@ export class PermissionsService {
   }
 
   async getPermissionsByUserId(userId: number) {
-    return this.prisma.permissions.findMany({
+    const permissions = await this.prisma.permissions.findMany({
       where: {
         userId: userId,
       },
+      include: {
+        domPermission: true,
+      },
     });
+
+    return PermissionsMapper.toDto(permissions);
   }
 
   async getPermissionsByDomId(domId: number) {
