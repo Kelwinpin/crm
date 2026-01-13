@@ -6,8 +6,9 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { SegmentsModule } from './modules/segments/segments.module';
+import { CustomersModule } from './modules/customers/customers.module';
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, PermissionsModule, SegmentsModule],
+  imports: [PrismaModule, UsersModule, AuthModule, PermissionsModule, SegmentsModule, CustomersModule],
   controllers: [AppController],
   providers: [AppService],
 })

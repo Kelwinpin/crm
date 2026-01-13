@@ -89,7 +89,7 @@ model dom_segments {
 model customers {
   id                 Int             @id @default(autoincrement())
   name               String          @db.VarChar(255)
-  type               CustomerType?
+  type               String?         @db.VarChar(255)
   cpfCnpj            String?         @unique @map("cpf_cnpj") @db.VarChar(20)
   email              String?         @db.VarChar(255)
   phone              String?         @db.VarChar(20)
@@ -103,13 +103,14 @@ model customers {
   state              String?         @db.VarChar(2)
   zipCode            String?         @map("zip_code") @db.VarChar(9)
   country            String?         @default("Brasil") @db.VarChar(100)
-  companySize        CompanySize?    @map("company_size")
-  status             CustomerStatus? @default(active)
+  companySize        String?         @db.VarChar(255) @map("company_size")
+  status             String?         @db.VarChar(255) @default("active")
   source             String?         @db.VarChar(50)
   ownerId            Int?            @map("owner_id")
   obs                String?         @db.Text
   createdAt          DateTime        @default(now()) @map("created_at")
   updatedAt          DateTime        @updatedAt @map("updated_at")
+  deletedAt          DateTime?       @map("deleted_at")
   createdBy          Int?            @map("created_by")
   updatedBy          Int?            @map("updated_by")
   owner              users?          @relation("CustomerOwner", fields: [ownerId], references: [id])
