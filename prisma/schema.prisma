@@ -87,36 +87,37 @@ model dom_segments {
 }
 
 model customers {
-  id                 Int             @id @default(autoincrement())
-  name               String          @db.VarChar(255)
-  type               String?         @db.VarChar(255)
-  cpfCnpj            String?         @unique @map("cpf_cnpj") @db.VarChar(20)
-  email              String?         @db.VarChar(255)
-  phone              String?         @db.VarChar(20)
-  mobile             String?         @db.VarChar(20)
-  website            String?         @db.VarChar(255)
-  address            String?         @db.VarChar(255)
-  addressNumber      String?         @map("address_number") @db.VarChar(20)
-  addressComplement  String?         @map("address_complement") @db.VarChar(100)
-  neighborhood       String?         @db.VarChar(100)
-  city               String?         @db.VarChar(100)
-  state              String?         @db.VarChar(2)
-  zipCode            String?         @map("zip_code") @db.VarChar(9)
-  country            String?         @default("Brasil") @db.VarChar(100)
-  companySize        String?         @db.VarChar(255) @map("company_size")
-  status             String?         @db.VarChar(255) @default("active")
-  source             String?         @db.VarChar(50)
-  ownerId            Int?            @map("owner_id")
-  obs                String?         @db.Text
-  createdAt          DateTime        @default(now()) @map("created_at")
-  updatedAt          DateTime        @updatedAt @map("updated_at")
-  deletedAt          DateTime?       @map("deleted_at")
-  createdBy          Int?            @map("created_by")
-  updatedBy          Int?            @map("updated_by")
-  owner              users?          @relation("CustomerOwner", fields: [ownerId], references: [id])
-  creator            users?          @relation("CustomerCreatedBy", fields: [createdBy], references: [id])
-  updater            users?          @relation("CustomerUpdatedBy", fields: [updatedBy], references: [id])
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(255)
+  type               String?              @db.VarChar(255)
+  cpfCnpj            String?              @unique @map("cpf_cnpj") @db.VarChar(20)
+  email              String?              @db.VarChar(255)
+  phone              String?              @db.VarChar(20)
+  mobile             String?              @db.VarChar(20)
+  website            String?              @db.VarChar(255)
+  address            String?              @db.VarChar(255)
+  addressNumber      String?              @map("address_number") @db.VarChar(20)
+  addressComplement  String?              @map("address_complement") @db.VarChar(100)
+  neighborhood       String?              @db.VarChar(100)
+  city               String?              @db.VarChar(100)
+  state              String?              @db.VarChar(2)
+  zipCode            String?              @map("zip_code") @db.VarChar(9)
+  country            String?              @default("Brasil") @db.VarChar(100)
+  companySize        String?              @db.VarChar(255) @map("company_size")
+  status             String?              @db.VarChar(255) @default("active")
+  source             String?              @db.VarChar(50)
+  ownerId            Int?                 @map("owner_id")
+  obs                String?              @db.Text
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  deletedAt          DateTime?            @map("deleted_at")
+  createdBy          Int?                 @map("created_by")
+  updatedBy          Int?                 @map("updated_by")
+  owner              users?               @relation("CustomerOwner", fields: [ownerId], references: [id])
+  creator            users?               @relation("CustomerCreatedBy", fields: [createdBy], references: [id])
+  updater            users?               @relation("CustomerUpdatedBy", fields: [updatedBy], references: [id])
   segments           segments[]
+  contacts           customers_contacts[]
 
   @@index([name], map: "idx_customers_name")
   @@index([email], map: "idx_customers_email")
@@ -134,4 +135,27 @@ model segments {
 
   @@index([customerId], map: "idx_segments_customer_id")
   @@index([domSegmentId], map: "idx_segments_dom_segment_id")
+}
+
+model customers_roles {
+  id                Int                  @id @default(autoincrement())
+  name              String               @unique @db.VarChar(100)
+  customersContacts customers_contacts[]
+
+  @@index([id], map: "idx_customer_role_id")
+}
+
+model customers_contacts {
+  id         Int              @id @default(autoincrement())
+  customerId Int?             @map("customer_id")
+  email      String?          @db.VarChar(255)
+  name       String?          @db.VarChar(255)
+  phone      String?          @db.VarChar(255)
+  roleId     Int?             @map("role_id")
+  customer   customers?       @relation(fields: [customerId], references: [id])
+  role       customers_roles? @relation(fields: [roleId], references: [id])
+
+  @@index([name], map: "idx_customers_contacts_name")
+  @@index([customerId], map: "idx_customers_contacts_customer_id")
+  @@index([roleId], map: "idx_customers_contacts_role_id")
 }
