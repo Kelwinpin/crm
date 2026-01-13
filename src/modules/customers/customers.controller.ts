@@ -45,4 +45,22 @@ export class CustomersController {
     async deleteCustomer(@Param('id') customerId: number) {
         return this.customersService.deleteCustomer(customerId);
     }
+
+    @Get('owner/:id')
+    @RequirePermissions({ resource: 'customers', actions: ['READ'] })
+    async getCustomersByOwnerId(@Param('id') ownerId: number) {
+        return this.customersService.getCustomersByOwnerId(ownerId);
+    }
+
+    @Post('deactivate')
+    @RequirePermissions({ resource: 'customers', actions: ['UPDATE'] })
+    async deactivateCustomer(@Body() customerId: number) {
+        return this.customersService.deactivateCustomer(customerId);
+    }
+
+    @Post('reactivate')
+    @RequirePermissions({ resource: 'customers', actions: ['UPDATE'] })
+    async reactivateCustomer(@Body() customerId: number) {
+        return this.customersService.reactivateCustomer(customerId);
+    }
 }
