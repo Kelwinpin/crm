@@ -6,34 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum ActionType {
-  CREATE
-  READ
-  UPDATE
-  DELETE
-
-  @@map("action_type")
-}
-
-enum CustomerType {
-  individual
-  company
-}
-
-enum CompanySize {
-  micro
-  small
-  medium
-  large
-}
-
-enum CustomerStatus {
-  active
-  inactive
-  prospect
-  lead
-}
-
 model users {
   id               Int           @id @default(autoincrement())
   name             String        @db.VarChar(255)
@@ -44,10 +16,10 @@ model users {
   deletedAt        DateTime?     @map("deleted_at")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
-  permissions      permissions[]
-  ownedCustomers   customers[]   @relation("CustomerOwner")
   createdCustomers customers[]   @relation("CustomerCreatedBy")
+  ownedCustomers   customers[]   @relation("CustomerOwner")
   updatedCustomers customers[]   @relation("CustomerUpdatedBy")
+  permissions      permissions[]
 
   @@index([email], map: "idx_users_email")
   @@index([cpf], map: "idx_users_cpf")
@@ -69,8 +41,8 @@ model permissions {
   action          ActionType
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
-  user            users           @relation(fields: [userId], references: [id], onDelete: Cascade)
   domPermission   dom_permissions @relation(fields: [domPermissionId], references: [id], onDelete: Cascade)
+  user            users           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, domPermissionId, action], map: "uq_user_domain_type")
   @@index([userId], map: "idx_permissions_user_id")
@@ -87,37 +59,37 @@ model dom_segments {
 }
 
 model customers {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @db.VarChar(255)
-  type               String?              @db.VarChar(255)
-  cpfCnpj            String?              @unique @map("cpf_cnpj") @db.VarChar(20)
-  email              String?              @db.VarChar(255)
-  phone              String?              @db.VarChar(20)
-  mobile             String?              @db.VarChar(20)
-  website            String?              @db.VarChar(255)
-  address            String?              @db.VarChar(255)
-  addressNumber      String?              @map("address_number") @db.VarChar(20)
-  addressComplement  String?              @map("address_complement") @db.VarChar(100)
-  neighborhood       String?              @db.VarChar(100)
-  city               String?              @db.VarChar(100)
-  state              String?              @db.VarChar(2)
-  zipCode            String?              @map("zip_code") @db.VarChar(9)
-  country            String?              @default("Brasil") @db.VarChar(100)
-  companySize        String?              @db.VarChar(255) @map("company_size")
-  status             String?              @db.VarChar(255) @default("active")
-  source             String?              @db.VarChar(50)
-  ownerId            Int?                 @map("owner_id")
-  obs                String?              @db.Text
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
-  deletedAt          DateTime?            @map("deleted_at")
-  createdBy          Int?                 @map("created_by")
-  updatedBy          Int?                 @map("updated_by")
-  owner              users?               @relation("CustomerOwner", fields: [ownerId], references: [id])
-  creator            users?               @relation("CustomerCreatedBy", fields: [createdBy], references: [id])
-  updater            users?               @relation("CustomerUpdatedBy", fields: [updatedBy], references: [id])
-  segments           segments[]
-  contacts           customers_contacts[]
+  id                Int                  @id @default(autoincrement())
+  name              String               @db.VarChar(255)
+  type              String?              @db.VarChar(255)
+  cpfCnpj           String?              @unique @map("cpf_cnpj") @db.VarChar(20)
+  email             String?              @db.VarChar(255)
+  phone             String?              @db.VarChar(20)
+  mobile            String?              @db.VarChar(20)
+  website           String?              @db.VarChar(255)
+  address           String?              @db.VarChar(255)
+  addressNumber     String?              @map("address_number") @db.VarChar(20)
+  addressComplement String?              @map("address_complement") @db.VarChar(100)
+  neighborhood      String?              @db.VarChar(100)
+  city              String?              @db.VarChar(100)
+  state             String?              @db.VarChar(2)
+  zipCode           String?              @map("zip_code") @db.VarChar(9)
+  country           String?              @default("Brasil") @db.VarChar(100)
+  companySize       String?              @map("company_size") @db.VarChar(255)
+  status            String?              @default("active") @db.VarChar(255)
+  source            String?              @db.VarChar(50)
+  ownerId           Int?                 @map("owner_id")
+  obs               String?
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  createdBy         Int?                 @map("created_by")
+  updatedBy         Int?                 @map("updated_by")
+  creator           users?               @relation("CustomerCreatedBy", fields: [createdBy], references: [id])
+  owner             users?               @relation("CustomerOwner", fields: [ownerId], references: [id])
+  updater           users?               @relation("CustomerUpdatedBy", fields: [updatedBy], references: [id])
+  contacts          customers_contacts[]
+  segments          segments[]
 
   @@index([name], map: "idx_customers_name")
   @@index([email], map: "idx_customers_email")
@@ -127,11 +99,11 @@ model customers {
 }
 
 model segments {
-  id            Int           @id @default(autoincrement())
-  customerId    Int           @map("customer_id")
-  domSegmentId  Int           @map("dom_segment_id")
-  customer      customers     @relation(fields: [customerId], references: [id])
-  domSegment    dom_segments  @relation(fields: [domSegmentId], references: [id])
+  id           Int          @id @default(autoincrement())
+  customerId   Int          @map("customer_id")
+  domSegmentId Int          @map("dom_segment_id")
+  customer     customers    @relation(fields: [customerId], references: [id])
+  domSegment   dom_segments @relation(fields: [domSegmentId], references: [id])
 
   @@index([customerId], map: "idx_segments_customer_id")
   @@index([domSegmentId], map: "idx_segments_dom_segment_id")
@@ -158,4 +130,32 @@ model customers_contacts {
   @@index([name], map: "idx_customers_contacts_name")
   @@index([customerId], map: "idx_customers_contacts_customer_id")
   @@index([roleId], map: "idx_customers_contacts_role_id")
+}
+
+enum ActionType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+
+  @@map("action_type")
+}
+
+enum CustomerType {
+  individual
+  company
+}
+
+enum CompanySize {
+  micro
+  small
+  medium
+  large
+}
+
+enum CustomerStatus {
+  active
+  inactive
+  prospect
+  lead
 }
