@@ -8,8 +8,65 @@ import { handlePrismaError } from 'src/shared/utils/handle-prisma-error';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  getAllUsers() {
-    return this.prisma.users.findMany();
+  async getAllUsers(page: number, limit: number, search: string) {
+    let where : Prisma.usersWhereInput = {};
+    
+    if (search) {
+      if (search.includes('@')) {
+        where = {
+          email: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        };
+      } else if(/^[0-9]+$/.test(search)) {
+        where = {
+          cpf: {
+            contains: search,
+          },
+        };
+      } else {
+        where = {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        };
+      }
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.users.findMany({
+        ...(Object.keys(where).length > 0 && { where }),
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        omit: {
+          password: true,
+        },
+      }),
+      this.prisma.users.count({
+        ...(Object.keys(where).length > 0 && { where }),
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+      },
+    };
   }
 
   getUser(id: number) {

@@ -7,6 +7,10 @@ import { PermissionsMapper } from "./permissions.mapper";
 @Injectable()
 export class PermissionsService {
   constructor(private prisma: PrismaService) {}
+
+  async getPermissions(){
+    return this.prisma.dom_permissions.findMany();
+  }
   
   async linkPermission(linkPermissionDto: LinkPermissionDto) {
     try {

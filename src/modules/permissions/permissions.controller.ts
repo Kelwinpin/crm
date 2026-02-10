@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from "@nestjs/common";
 import { PermissionsService } from "./permissions.service";
 import { LinkPermissionDto } from "./dto/linkPermission.dto";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
@@ -24,5 +24,15 @@ export class PermissionsController {
     @Get('manage')
     getPermissionToManage(@CurrentUser() user: AuthTokenPayload) {
         return this.permissionsService.getPermissionToManage(user.id);
+    }
+
+    @Get()
+    getPermissions() {
+        return this.permissionsService.getPermissions();
+    }
+
+    @Get('user/:id')
+    getPermissionsByUserId(@Param('id', ParseIntPipe) userId: number) {
+        return this.permissionsService.getPermissionsByUserId(userId);
     }
 }
