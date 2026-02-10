@@ -137,7 +137,8 @@ enum ActionType {
   READ
   UPDATE
   DELETE
-
+  MANAGE
+  
   @@map("action_type")
 }
 

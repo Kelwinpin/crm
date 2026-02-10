@@ -58,4 +58,20 @@ export class PermissionsService {
         },
     });
   }
+
+  async getPermissionToManage(userId: number) {
+    const permissionsToManage = await this.prisma.permissions.findMany({
+      where: {
+        userId: userId,
+        action: 'MANAGE'
+      },
+      include: {
+        domPermission: true,
+      },
+    });
+
+
+    
+    return PermissionsMapper.toManage(permissionsToManage);
+  }
 }   

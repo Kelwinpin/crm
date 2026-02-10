@@ -3,4 +3,5 @@ export enum ActionType {
   READ = 'READ',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
+  MANAGE = 'MANAGE',
 }
